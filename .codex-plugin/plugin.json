@@ -1,0 +1,17 @@
+{
+  "name": "iterm2-status",
+  "version": "0.1.0+codex.20260909225216",
+  "description": "Show Codex sessions beside Claude in the iTerm2 Session Status sidebar.",
+  "author": {
+    "name": "Trey Reynolds"
+  },
+  "interface": {
+    "displayName": "iTerm2 Session Status",
+    "shortDescription": "See Codex and Claude together in iTerm2.",
+    "longDescription": "Local lifecycle hooks report Codex activity, approvals, input requests, and completion to the existing iTerm2 Session Status toolbelt. Includes Codex launcher profiles.",
+    "developerName": "Trey Reynolds",
+    "category": "Productivity",
+    "capabilities": [],
+    "defaultPrompt": "Help me configure Codex session status in iTerm2."
+  }
+}
