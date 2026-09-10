@@ -1,0 +1,26 @@
+name: Bug report
+description: Report an installation, launcher, or session status problem.
+body:
+  - type: markdown
+    attributes:
+      value: Please omit prompts, credentials, transcripts, and configuration backups. Run diagnostics from your source checkout.
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: What happened?
+      description: Include steps, expected behavior, and observed behavior.
+    validations:
+      required: true
+  - type: textarea
+    id: diagnostics
+    attributes:
+      label: Diagnostic report
+      description: Paste python3 install.py doctor --json output. It excludes personal paths and session content.
+      render: json
+    validations:
+      required: true
+  - type: textarea
+    id: setup
+    attributes:
+      label: Setup details
+      description: Shell, installation method, and whether you use native panes, SSH, or tmux. Avoid private paths.

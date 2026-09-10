@@ -217,6 +217,11 @@ def install(paths, args):
         display({"schema_version": 1, "versions": versions, "checks": checks})
         raise ValueError("Prerequisites are missing; no installation files were changed.")
     settings["codex"] = codex
+    runtime_values = [("python_path", sys.executable), ("codex_path", codex),
+                      ("shell_path", settings["shell"]), ("saved_path", os.environ.get("PATH") or os.defpath)]
+    for key, value in runtime_values:
+        if not value or any(c in value for c in "\n\r\0"):
+            raise ValueError(f"The {key} value must be a single-line path.")
     marketplace = marketplace_config(json.loads(texts["marketplace"]) if texts["marketplace"] else None)
     profiles = profile_config(canonical, settings, json.loads(texts["profiles"]) if texts["profiles"] else {"Profiles": []})
     selector = f"{NAME}@{marketplace['name']}"
@@ -249,10 +254,7 @@ def install(paths, args):
             raise RuntimeError(f"Codex installation failed. Launchers were not changed. Backups: {backup}. Fix the prerequisite and rerun this installer.") from error
         save_json(paths["profiles"], profiles, backup, texts["profiles"])
         save_json(paths["settings"], settings, backup, texts["settings"])
-        for key, value in [("python_path", sys.executable), ("codex_path", codex),
-                           ("shell_path", settings["shell"]), ("saved_path", os.environ.get("PATH", ""))]:
-            if not value or any(c in value for c in "\n\r\0"):
-                raise ValueError(f"The {key} value must be a single-line path.")
+        for key, value in runtime_values:
             save_text(paths[key], value + "\n", backup, paths[key].read_text() if paths[key].exists() else None)
         for item in checks:
             if item["status"] == "warning":

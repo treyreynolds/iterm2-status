@@ -9,8 +9,8 @@ fi
 if [ -z "$python_path" ]; then
   python_path=$(command -v python3 2>/dev/null)
 fi
-if [ -n "$python_path" ] && [ -x "$python_path" ]; then
-  "$python_path" -B "${PLUGIN_ROOT:?}/scripts/status.py" 2>/dev/null || printf '{}\n'
+if [ -n "$python_path" ] && [ -x "$python_path" ] && [ -f "${PLUGIN_ROOT:-}/scripts/status.py" ]; then
+  "$python_path" -B "$PLUGIN_ROOT/scripts/status.py" 2>/dev/null || printf '{}\n'
 else
   printf '{}\n'
 fi

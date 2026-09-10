@@ -18,6 +18,7 @@ if [[ -r "$runtime_dir/search-path" ]]; then
   IFS= read -r install_path < "$runtime_dir/search-path"
   export PATH="$PATH:$install_path"
 fi
+export SHELL="$exit_shell"
 codex_path=""
 if [[ -r "$runtime_dir/codex-path" ]]; then
   IFS= read -r codex_path < "$runtime_dir/codex-path"

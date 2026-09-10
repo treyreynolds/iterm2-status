@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="250" viewBox="0 0 900 250" role="img" aria-labelledby="title desc">
+  <title id="title">Codex and Claude session status examples</title>
+  <desc id="desc">Illustration: Codex is waiting for approval, Claude is working, and another Codex session is idle.</desc>
+  <rect width="900" height="250" rx="16" fill="#171c25"/>
+  <g font-family="-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif" fill="#edf1f7">
+    <text x="30" y="38" font-size="20" font-weight="600">Session Status</text>
+    <text x="660" y="38" font-size="13" fill="#aeb9c9">Illustration · native iTerm2 sidebar</text>
+    <path d="M30 56H870 M30 116H870 M30 176H870" stroke="#344051"/>
+    <circle cx="43" cy="88" r="6" fill="#e06c75"/>
+    <text x="66" y="94" font-size="18">Codex · Website</text>
+    <text x="430" y="94" font-size="17" fill="#f08c92">Waiting</text>
+    <text x="580" y="94" font-size="15" fill="#b8c4d5">Approval needed</text>
+    <circle cx="43" cy="148" r="6" fill="#e5a950"/>
+    <text x="66" y="154" font-size="18">Claude · API</text>
+    <text x="430" y="154" font-size="17" fill="#e5b66f">Working</text>
+    <text x="580" y="154" font-size="15" fill="#b8c4d5">Task in progress</text>
+    <circle cx="43" cy="208" r="6" fill="#98c379"/>
+    <text x="66" y="214" font-size="18">Codex · Documentation</text>
+    <text x="430" y="214" font-size="17" fill="#a9d48a">Idle</text>
+    <text x="580" y="214" font-size="15" fill="#b8c4d5">Ready for your next task</text>
+  </g>
+</svg>

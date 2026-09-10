@@ -17,4 +17,7 @@ iTerm2 supplies the native Session Status sidebar. No daemon or MCP service is n
   version and changelog before tagging and packaging.
 - Run a live CLI approval/completion smoke test when lifecycle mapping changes.
   Do not create subagents just to test; use the existing fixtures for concurrency.
-- No GitHub repository or public license should be assumed. Check `git remote -v`.
+- Check `git remote -v` before publishing. Follow docs/releasing.md and update
+  docs/compatibility.md with observed evidence. Do not imply fixture tests are live GUI tests.
+- Repository-owned development helpers live in tools/dev.py; keep them usable
+  without an installed Codex skill bundle.

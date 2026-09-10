@@ -1,161 +1,161 @@
 # Codex iTerm2 Status
 
-A local Codex plugin that puts Codex CLI sessions beside Claude Code in iTerm2’s
-native **Session Status** sidebar. Working, waiting, and idle states show which
-agent needs attention; click a row to jump to its terminal.
+See which Codex sessions are working, waiting for you, or idle in iTerm2's native
+**Session Status** sidebar. Codex and Claude Code can appear in the same list;
+click a row to jump to its terminal. Optional profiles launch new Codex agents.
 
-This repository owns the Codex hooks and launcher installer. iTerm2 supplies the
-sidebar. Keep iTerm2, Codex CLI, and this plugin updated separately.
+![Illustration of working, waiting, and idle session states](assets/status-overview.svg)
 
-## Install on a Mac
+This is an independent community integration for **Codex CLI in iTerm2**.
+iTerm2 supplies the sidebar; this plugin supplies observational lifecycle hooks
+and a launcher installer. Claude Code is optional. No daemon, API key, pip package,
+or MCP server is needed by this plugin.
 
-Requirements: macOS, **iTerm2 3.7+**, **Codex CLI with lifecycle hooks**, and Python 3.
-Tested with iTerm2 3.7.0 and Codex CLI 0.153.4. Enable the Python API under iTerm2
-Settings → General → Magic; the built-in Claude integration may have enabled it.
+**Public beta in preparation: `v0.2.0-beta.1`.** See the
+[compatibility matrix](docs/compatibility.md) for verified setups and current limits.
 
-The repository is currently private. Authenticate Git with your GitHub account
-(for example, `gh auth login` followed by `gh auth setup-git`), then clone it:
+## Requirements
+
+- macOS with **iTerm2 3.7+**. iTerm2 3.7 requires macOS 13 or later.
+- **Codex CLI 0.153.4+**, installed and available to your shell.
+- **Python 3.9+**, from Homebrew, python.org, pyenv, or your existing developer tools.
+- Enable **iTerm2 → Settings → General → Magic → Python API**.
+
+The installer checks the actual Codex and iTerm capabilities before changing
+configuration. It remembers the Python interpreter used for installation, so hooks
+also work when Codex has a minimal `PATH`. Your Codex login and hook trust remain
+under Codex's normal controls.
+
+## Install
+
+Clone the repository (while it is private, authenticate Git with your GitHub account):
 
 ```sh
 mkdir -p ~/plugins
 git clone https://github.com/treyreynolds/iterm2-status.git ~/plugins/iterm2-status
 cd ~/plugins/iterm2-status
 python3 install.py
+python3 install.py doctor --live
 ```
 
-For an extracted ZIP, place its `iterm2-status` folder under `~/plugins` and run
-`python3 install.py` from that folder.
+Or extract a release ZIP to `~/plugins/iterm2-status` and run the same Python
+commands from that folder. Another source directory is fine: the installer creates
+`~/plugins/iterm2-status` as a symlink if that location is free.
 
-The installer registers the plugin in your personal Codex marketplace, installs
-it with the Codex CLI, and adds a **Codex** dynamic profile. It works with a cloned
-repository or an extracted ZIP and has no pip dependencies. If your checkout is
-elsewhere, it creates the canonical `~/plugins/iterm2-status` symlink, provided that
-location is not already occupied by a different checkout.
+Then:
 
-For a second launcher that always starts in a particular workspace:
+1. In iTerm2, choose **View → Toggle Toolbelt**, then **View → Toolbelt → Session Status**.
+2. Start a **new Codex session**. Open **`/hooks`** and review/trust this plugin's hooks.
+3. Run a short task. Its row should move from idle to working and return to idle.
+4. Double-click the **Codex** profile to open additional agents in the current directory.
+
+The installer creates a personal Codex marketplace entry and a separate dynamic
+profile file. It preserves unrelated plugins and profiles and backs up changed
+configuration. Preview the installation with `python3 install.py --dry-run`.
+
+### Customize launchers and locations
+
+Add a launcher for a fixed workspace and inherit an existing iTerm appearance:
 
 ```sh
-python3 install.py --workspace ~/work --workspace-name 'Codex — Work'
+python3 install.py --workspace ~/work --workspace-name 'Codex — Work' \
+  --parent-profile 'Default'
 ```
 
-To inherit an existing iTerm appearance, add `--parent-profile 'Profile Name'`.
-The default parent is **Default**. Preview with `--dry-run`.
+Custom application, CLI, or shell paths:
 
-Start a new Codex session after installation. If prompted, use **/hooks** to review
-and trust this plugin’s hooks. The installer does not approve hooks or change
-sandbox, model, or approval policies. Existing Codex sessions need to be restarted
-or resumed to pick up the plugin.
+```sh
+python3 install.py --iterm-app "$HOME/Applications/iTerm.app" \
+  --codex /opt/homebrew/bin/codex --shell /bin/zsh
+```
 
-## Upgrade
+The installer supports bash, zsh, and fish login shells. Paths containing spaces,
+quotes, and Unicode are accepted. Saved choices are reused on upgrades;
+`--no-workspace` removes the optional workspace launcher.
 
-From a clone on the `main` branch:
+The installer respects `CODEX_HOME` for Codex configuration backups and
+`XDG_CONFIG_HOME` for this integration's settings. Keep those environment settings
+consistent when installing and launching Codex. Advanced runtime overrides and
+application discovery are documented in [troubleshooting](docs/troubleshooting.md).
+
+## Upgrade and rollback
+
+From a clone on `main`:
 
 ```sh
 cd ~/plugins/iterm2-status
 git pull --ff-only
 python3 install.py
-python3 install.py doctor
+python3 install.py doctor --live
 ```
 
-`git pull --ff-only` stops if local history has diverged. The installer reapplies
-the checked-out release and preserves saved workspace/profile preferences. For a
-ZIP installation, extract the new release over the source directory and rerun the
-installer. An iTerm2 or Codex upgrade does **not** fetch updates to this repository.
+Start a fresh Codex session and review any changed hooks. Pulling source alone
+cannot update Codex's installed cache. iTerm2 and Codex updates also do not fetch
+plugin updates; update each component separately.
 
-Start a fresh Codex session after upgrades, and review changed hooks if requested.
-The hook source is your Git checkout; Codex runs a cached installation, so editing
-source alone does not update that cache.
+For ZIP installations, extract the new release into the source directory and rerun
+the installer. To roll back a clean Git checkout, use
+`git switch --detach <release-tag>`, then `python3 install.py`. Return with
+`git switch main` before the next branch upgrade. Commit or stash your own edits
+before switching versions.
 
-## Diagnose or remove
+## Troubleshoot or remove
 
 ```sh
 python3 install.py doctor
+python3 install.py doctor --live
+python3 install.py doctor --json
 python3 install.py uninstall --dry-run
 python3 install.py uninstall
 ```
 
-Doctor checks source versus installed versions, the iTerm API setting, and launcher
-files. It does not inspect prompts or change settings. Use `/hooks` to inspect trust,
-and run a short Codex task to confirm live status after a major upstream upgrade.
+`doctor` checks dependency versions/capabilities, installed plugin version,
+interpreter, source link, and the actual launcher entries. `--live` also checks the
+iTerm connection and may trigger iTerm's access prompt. It does not change a
+session's status. Hook trust must be checked separately with `/hooks`.
 
-Uninstall removes the cached Codex plugin and archives its launcher profiles. It
-keeps the source repository, local settings, marketplace entry, and backups so you
-can reinstall. Unrelated entries in the profile file are preserved.
+`doctor --json` produces a small support report containing versions and named check
+results, without home paths, project names, terminal IDs, prompts, or tool output.
+Use it when [reporting a bug](https://github.com/treyreynolds/iterm2-status/issues/new/choose).
+See [troubleshooting](docs/troubleshooting.md) for specific fixes.
 
-## Where things live
+Uninstall removes the cached Codex plugin and archives only its own launcher
+profiles. Source, preferences, marketplace entry, and backups remain available for
+reinstallation. Repeating uninstall is safe.
 
-| Content | Location |
+## Data and behavior
+
+The hooks report status to an explicit iTerm session UUID. They always return an
+empty JSON object successfully, including when iTerm is unavailable. They never
+approve or block agent actions, read transcripts, or add model context.
+
+The local cache contains session IDs, project folder basenames, state, timestamps,
+background-agent IDs, and hashes of tool identity. Prompts, raw command arguments,
+and tool responses are not stored. No telemetry is sent. iTerm displays project
+basenames and generic labels such as “Approval needed.” See [privacy and security](SECURITY.md).
+
+| Content | Default location |
 |---|---|
-| Versioned source | This repository |
+| Source | `~/plugins/iterm2-status/` |
 | Personal marketplace | `~/.agents/plugins/marketplace.json` |
-| Installed hooks | Codex’s versioned plugin cache |
-| Workspace and appearance choices | `~/.config/codex-iterm2-status/settings.json` |
+| Installed hooks | Codex's versioned plugin cache |
+| Preferences and selected interpreter | `~/.config/codex-iterm2-status/` |
 | Configuration backups | `~/.config/codex-iterm2-status/backups/` |
-| iTerm launcher profiles | `~/Library/Application Support/iTerm2/DynamicProfiles/codex-profiles.json` |
-| Live status metadata | The `PLUGIN_DATA` directory supplied by Codex |
+| Launcher profiles | `~/Library/Application Support/iTerm2/DynamicProfiles/codex-profiles.json` |
+| Status cache | Codex's `PLUGIN_DATA` directory; fallback `~/.cache/codex-iterm2-status/` |
 
-Machine-specific directories, profile names, live status, and configuration backups
-stay outside Git. The adapter stores IDs, a folder name, status, and hashed tool
-identifiers. It neither stores nor displays prompts, tool commands, or outputs.
+## Contribute
 
-## Develop and release
+Run `make test`. The runtime and tests use Python's standard library. Source
+validation, version updates, and reproducible ZIP/checksum packaging are included
+in this repository. See [CONTRIBUTING.md](CONTRIBUTING.md) and the
+[release procedure](docs/releasing.md).
 
-```sh
-make test
-```
-
-The tests cover lifecycle transitions, simultaneous waiting tools, subagents,
-terminal isolation, concurrent events, iTerm failures/timeouts, and installer
-preservation/quoting. Runtime code uses Python’s standard library.
-
-For local development in Codex, use the **plugin-creator** skill to refresh the
-manifest’s `+codex.<timestamp>` cache suffix and reinstall. Its helper lives at:
-
-```sh
-python3 ~/.codex/skills/.system/plugin-creator/scripts/read_marketplace_name.py
-python3 ~/.codex/skills/.system/plugin-creator/scripts/update_plugin_cachebuster.py .
-python3 install.py
-```
-
-For a release: choose a new semantic version for an actual feature/fix release,
-update `CHANGELOG.md`, run tests, reinstall and smoke-test, then commit and tag it.
-Commit the manifest version used by the tag. Tags make it possible to return to a
-known build. This package’s first repository release is `v0.1.0`.
-
-```sh
-make package
-```
-
-This creates `dist/iterm2-status.zip` from the committed **HEAD**, excluding local
-settings, untracked changes, Git internals, and ignored generated files. Commit the
-release before packaging. The archive has an `iterm2-status/` top-level folder.
-
-For rollback, commit or stash local work first. With a clean worktree, run
-`git switch --detach v0.1.0` (or another known tag) in the installed checkout and
-rerun `python3 install.py`. Return to `main` when ready to upgrade again.
-Git protects source history; the installer backs up local configuration.
-
-The source is maintained in [treyreynolds/iterm2-status](https://github.com/treyreynolds/iterm2-status),
-currently a private personal repository. Tags preserve releases for future installs
-and rollback. No public distribution license is granted by this repository yet.
-
-## Behavior and limits
-
-- The adapter always targets the terminal UUID from `ITERM_SESSION_ID`.
-- Hooks return `{}` and exit successfully even if iTerm2 is unavailable. They never
-  approve or block agent actions.
-- Input/approval requests take priority over working status. Completed background
-  subagents allow an idle parent to return to idle.
-- Approval status clears when the matching tool completes. A denied request may
-  remain waiting until Stop or Interrupt if no matching completion event is emitted.
-- The supplied launcher reports idle immediately and clears status after CLI exit.
-  Ordinary `codex` commands also use the hooks, but may first appear when Codex
-  emits SessionStart at the first prompt. Abruptly killed ordinary CLI processes
-  cannot report a final hook.
-- Codex desktop-app conversations are outside this integration.
+Licensed under the [MIT License](LICENSE).
 
 ## References
 
-- [Codex hooks](https://learn.chatgpt.com/docs/hooks)
+- [Official OpenAI documentation: Codex hooks](https://learn.chatgpt.com/docs/hooks)
 - [iTerm2 Session Status](https://iterm2.com/documentation-session-status.html)
-- [iTerm2 Dynamic Profiles](https://iterm2.com/documentation-dynamic-profiles.html)
+- [iTerm2 utilities](https://iterm2.com/documentation-utilities.html)
+- [iTerm2 dynamic profiles](https://iterm2.com/documentation-dynamic-profiles.html)

@@ -11,6 +11,7 @@ import os
 from pathlib import Path
 import platform
 import shutil
+import shlex
 import subprocess
 import sys
 import tarfile
@@ -79,6 +80,28 @@ def main():
              '--workspace', source, '--workspace-name', 'Codex — Unicode workspace'])
         assert installed(codex)[0]['version'] == original_version
         assert installed(codex)[0]['enabled']
+        # Execute the actual generated profile command in every supported login
+        # shell. A tiny wrapper calls real Codex --version, so this proves launch
+        # and return-to-shell without starting a model conversation.
+        for shell_name in ['bash', 'zsh', 'fish']:
+            shell = shutil.which(shell_name)
+            assert shell, 'Missing CI shell: ' + shell_name
+            run([sys.executable, installer, '--shell', shell])
+            runtime_codex = Path.home() / '.config/codex-iterm2-status/codex-path'
+            original_runtime = runtime_codex.read_text()
+            wrapper = folder / ('version wrapper ' + shell_name)
+            wrapper.write_text('#!/bin/sh\nexec ' + shlex.quote(str(codex)) + ' --version\n')
+            wrapper.chmod(0o700)
+            runtime_codex.write_text(str(wrapper) + '\n')
+            try:
+                profile_path = Path.home() / 'Library/Application Support/iTerm2/DynamicProfiles/codex-profiles.json'
+                workspace_profile = next(p for p in json.loads(profile_path.read_text())['Profiles'] if p['Guid'] == 'CODEX-ITERM2-WORKSPACE-0001')
+                result = run(shlex.split(workspace_profile['Command']), cwd=workspace_profile['Working Directory'],
+                             stdin=subprocess.DEVNULL, capture_output=True)
+                assert 'codex-cli ' + CODEX_VERSION in result.stdout, result.stdout
+                print('PASS: generated profile launched real Codex and returned through', shell_name)
+            finally:
+                runtime_codex.write_text(original_runtime)
         original_marketplace = marketplace.read_bytes()
         profiles = Path.home() / 'Library/Application Support/iTerm2/DynamicProfiles/codex-profiles.json'
         original_profiles = profiles.read_bytes()

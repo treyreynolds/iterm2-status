@@ -1,6 +1,6 @@
 {
   "name": "iterm2-status",
-  "version": "0.1.0+codex.20260909225216",
+  "version": "0.2.0-beta.1+codex.20260910154219",
   "description": "Show Codex sessions beside Claude in the iTerm2 Session Status sidebar.",
   "author": {
     "name": "Trey Reynolds"
