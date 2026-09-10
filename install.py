@@ -131,6 +131,7 @@ def doctor(paths, as_json=False, live=False):
     try:
         settings = normalized_settings(read_json(paths["settings"], {}))
         checks, versions, codex, it2 = prerequisites(paths["home"], settings)
+        checks = [dict(c, status="error") if c["id"] == "iterm_api" and c["status"] == "warning" else c for c in checks]
         manifest = read_json(paths["source"] / ".codex-plugin/plugin.json", {})
         versions["plugin"] = manifest.get("version")
         marketplace = marketplace_config(read_json(paths["marketplace"], None))["name"]

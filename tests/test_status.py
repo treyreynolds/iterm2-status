@@ -6,6 +6,7 @@ from pathlib import Path
 import subprocess
 import tempfile
 import sys
+import time
 import unittest
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -18,7 +19,7 @@ UUID2 = "AAAAAAAA-BBBB-CCCC-DDDD-EEEEEEEEEEEE"
 
 
 def event(name, **extra):
-    return dict(session_id="root-session", cwd="/private/test-project", hook_event_name=name, **extra)
+    return dict({"session_id": "root-session", "cwd": "/private/test-project", "hook_event_name": name}, **extra)
 
 
 class Lifecycle(unittest.TestCase):
@@ -93,6 +94,33 @@ class Lifecycle(unittest.TestCase):
         for invalid in ["", "active", "all", "$(touch bad)", UUID + ";x"]:
             self.assertIsNone(status.terminal_id(invalid))
 
+    def test_identical_parallel_approvals_wait_for_both_completions(self):
+        state = status.transition({}, event("UserPromptSubmit"))
+        tool = dict(tool_name="Bash", tool_input={"command": "same command"})
+        for _ in range(2):
+            state = status.transition(state, event("PermissionRequest", **tool))
+        state = status.transition(state, event("PostToolUse", **tool))
+        self.assertEqual(state["status"], "waiting")
+        state = status.transition(state, event("PostToolUse", **tool))
+        self.assertEqual(state["status"], "working")
+
+    def test_resume_clears_old_waiting_and_background_state(self):
+        state = status.transition({}, event("PermissionRequest", tool_name="Bash"))
+        state = status.transition(state, event("SubagentStart", agent_id="old"))
+        state = status.transition(state, event("SessionStart", source="resume"))
+        self.assertEqual(state["status"], "idle")
+        self.assertEqual(state["agents"], [])
+
+    def test_late_stop_cannot_clear_a_new_turn(self):
+        state = status.transition({}, event("UserPromptSubmit", turn_id="one"))
+        state = status.transition(state, event("UserPromptSubmit", turn_id="two"))
+        self.assertIsNone(status.transition(state, event("Stop", turn_id="one")))
+        self.assertEqual(status.transition(state, event("Stop", turn_id="two"))["status"], "idle")
+
+    def test_control_characters_do_not_reach_status_detail(self):
+        state = status.transition({}, event("UserPromptSubmit", cwd="/tmp/project\x1b\x00\u202e"))
+        self.assertEqual(state["detail"], "Codex · project")
+
 
 class Process(unittest.TestCase):
     def setUp(self):
@@ -154,6 +182,29 @@ class Process(unittest.TestCase):
             list(pool.map(self.run_hook, [json.dumps(event("SubagentStart", agent_id=str(i))) for i in range(4)]))
         state = json.loads((self.data / f"{UUID}.json").read_text())
         self.assertEqual(set(state["agents"]), {"0", "1", "2", "3"})
+
+    def test_slow_iterm_does_not_drop_concurrent_transitions(self):
+        self.run_hook(json.dumps(event("UserPromptSubmit")))
+        self.fake.write_text('#!' + sys.executable + '\nimport time\ntime.sleep(0.6)\n')
+        with concurrent.futures.ThreadPoolExecutor(max_workers=6) as pool:
+            list(pool.map(self.run_hook, [json.dumps(event("SubagentStart", agent_id=str(i))) for i in range(6)]))
+        state = json.loads((self.data / f"{UUID}.json").read_text())
+        self.assertEqual(set(state["agents"]), {str(i) for i in range(6)})
+
+    def test_newer_completion_is_reported_after_a_slow_request(self):
+        original = self.fake.read_text()
+        self.fake.write_text(original.replace('import json,os,sys', 'import json,os,sys,time\ntime.sleep(0.3)'))
+        with concurrent.futures.ThreadPoolExecutor(max_workers=2) as pool:
+            working = pool.submit(self.run_hook, json.dumps(event("UserPromptSubmit")))
+            deadline = time.monotonic() + 2
+            while not (self.data / f"{UUID}.json").exists() and time.monotonic() < deadline:
+                time.sleep(0.01)
+            idle = pool.submit(self.run_hook, json.dumps(event("Stop")))
+            working.result()
+            idle.result()
+        calls = [json.loads(line) for line in (self.data / "calls.jsonl").read_text().splitlines()]
+        self.assertEqual(calls[-1][calls[-1].index("--status") + 1], "idle")
+        self.assertTrue(json.loads((self.data / f"{UUID}.json").read_text())["reported"])
 
 
 if __name__ == "__main__":

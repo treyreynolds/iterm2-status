@@ -104,6 +104,49 @@ class Installer(unittest.TestCase):
             self.assertEqual(len(list((paths["settings"].parent / "backups").glob("*/codex-profiles.json"))), 1)
             self.assertTrue(ROOT.is_dir())
 
+    def test_failed_codex_install_preserves_existing_profiles(self):
+        with tempfile.TemporaryDirectory() as temp:
+            paths = installer.locations(Path(temp), ROOT, {})
+            paths["profiles"].parent.mkdir(parents=True)
+            original = '{"Profiles": [{"Name":"Keep me","Guid":"other"}]}'
+            paths["profiles"].write_text(original)
+            args = argparse.Namespace(workspace=None, workspace_name=None, parent_profile=None,
+                                      no_workspace=False, dry_run=False)
+            with patch.object(installer, "prerequisites", return_value=([], {}, "/fake/codex", "/fake/it2")), patch.object(installer, "run", side_effect=subprocess.CalledProcessError(1, 'codex')):
+                with self.assertRaisesRegex(RuntimeError, "Launchers were not changed"):
+                    installer.install(paths, args)
+            self.assertEqual(paths["profiles"].read_text(), original)
+            self.assertFalse(paths["settings"].exists())
+
+    def test_missing_prerequisites_leave_configuration_untouched(self):
+        with tempfile.TemporaryDirectory() as temp:
+            paths = installer.locations(Path(temp), ROOT, {})
+            args = argparse.Namespace(workspace=None, workspace_name=None, parent_profile=None,
+                                      no_workspace=False, dry_run=False)
+            checks = [{"id":"iterm_status", "status":"error", "message":"Missing it2"}]
+            with patch.object(installer, "prerequisites", return_value=(checks, {}, None, None)):
+                with self.assertRaisesRegex(ValueError, "Prerequisites"):
+                    installer.install(paths, args)
+            self.assertEqual(list(Path(temp).iterdir()), [])
+
+    def test_installation_lock_prevents_overlapping_writes(self):
+        with tempfile.TemporaryDirectory() as temp:
+            paths = installer.locations(Path(temp), ROOT, {})
+            with installer.installation_lock(paths):
+                with self.assertRaisesRegex(RuntimeError, "Another installer"):
+                    with installer.installation_lock(paths):
+                        self.fail("Acquired an already held installation lock")
+
+    def test_explicit_codex_works_when_codex_is_not_on_path(self):
+        with tempfile.TemporaryDirectory() as temp:
+            paths = installer.locations(Path(temp), ROOT, {})
+            args = argparse.Namespace(workspace=None, workspace_name=None, parent_profile=None,
+                                      no_workspace=False, dry_run=False, codex="/custom/codex")
+            with patch.object(installer.shutil, "which", return_value=None), patch.object(installer, "prerequisites", return_value=([], {}, "/custom/codex", "/fake/it2")), patch.object(installer, "run") as run:
+                installer.install(paths, args)
+            self.assertEqual(run.call_args.args[0][0], "/custom/codex")
+            self.assertEqual(read_settings(paths)["codex"], "/custom/codex")
+
 
 def read_settings(paths):
     return json.loads(paths["settings"].read_text())
