@@ -15,7 +15,6 @@ import subprocess
 import sys
 import tarfile
 import tempfile
-import urllib.request
 
 CODEX_VERSION = '0.153.4'
 CODEX_DIGESTS = {
@@ -26,8 +25,10 @@ ITERM_DIGEST = '14b5131e9134d0012466574fba6d69fb9ef84eee66660ee861e2da483089574a
 
 
 def download(url, path, expected):
-    with urllib.request.urlopen(url, timeout=60) as response, path.open('wb') as output:
-        shutil.copyfileobj(response, output)
+    # Use macOS's standard downloader and trust store, as for a manual download.
+    subprocess.run(['/usr/bin/curl', '--fail', '--location', '--silent', '--show-error',
+                    '--retry', '3', '--max-time', '90', '--output', str(path), url],
+                   check=True, timeout=120)
     if hashlib.sha256(path.read_bytes()).hexdigest() != expected:
         raise RuntimeError('Upstream archive checksum mismatch: ' + path.name)
 
