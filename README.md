@@ -13,12 +13,18 @@ Requirements: macOS, **iTerm2 3.7+**, **Codex CLI with lifecycle hooks**, and Py
 Tested with iTerm2 3.7.0 and Codex CLI 0.153.4. Enable the Python API under iTerm2
 Settings → General → Magic; the built-in Claude integration may have enabled it.
 
-Clone or extract this repository to `~/plugins/iterm2-status`, then:
+The repository is currently private. Authenticate Git with your GitHub account
+(for example, `gh auth login` followed by `gh auth setup-git`), then clone it:
 
 ```sh
+mkdir -p ~/plugins
+git clone https://github.com/treyreynolds/iterm2-status.git ~/plugins/iterm2-status
 cd ~/plugins/iterm2-status
 python3 install.py
 ```
+
+For an extracted ZIP, place its `iterm2-status` folder under `~/plugins` and run
+`python3 install.py` from that folder.
 
 The installer registers the plugin in your personal Codex marketplace, installs
 it with the Codex CLI, and adds a **Codex** dynamic profile. It works with a cloned
@@ -42,7 +48,7 @@ or resumed to pick up the plugin.
 
 ## Upgrade
 
-Once the repository has a Git remote and an upstream branch:
+From a clone on the `main` branch:
 
 ```sh
 cd ~/plugins/iterm2-status
@@ -129,9 +135,9 @@ For rollback, commit or stash local work first. With a clean worktree, run
 rerun `python3 install.py`. Return to `main` when ready to upgrade again.
 Git protects source history; the installer backs up local configuration.
 
-A private GitHub remote is recommended for backup and installation on other Macs.
-Until a remote is configured, this is a local repository and `git pull` has nothing
-to fetch. No public distribution license is granted by this repository yet.
+The source is maintained in [treyreynolds/iterm2-status](https://github.com/treyreynolds/iterm2-status),
+currently a private personal repository. Tags preserve releases for future installs
+and rollback. No public distribution license is granted by this repository yet.
 
 ## Behavior and limits
 
