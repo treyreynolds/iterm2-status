@@ -5,6 +5,7 @@ import os
 from pathlib import Path
 import subprocess
 import tempfile
+import sys
 import unittest
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -98,7 +99,7 @@ class Process(unittest.TestCase):
         self.tmp = tempfile.TemporaryDirectory()
         self.data = Path(self.tmp.name)
         self.fake = self.data / "it2"
-        self.fake.write_text('#!/usr/bin/python3\nimport json,os,sys\nfrom pathlib import Path\nwith (Path(os.environ["PLUGIN_DATA"])/"calls.jsonl").open("a") as f: f.write(json.dumps(sys.argv[1:])+"\\n")\n')
+        self.fake.write_text('#!' + sys.executable + '\nimport json,os,sys\nfrom pathlib import Path\nwith (Path(os.environ["PLUGIN_DATA"])/"calls.jsonl").open("a") as f: f.write(json.dumps(sys.argv[1:])+"\\n")\n')
         self.fake.chmod(0o700)
         self.env = dict(os.environ, PLUGIN_DATA=str(self.data), CODEX_ITERM2_IT2=str(self.fake),
                         ITERM_SESSION_ID="w0t0p0:" + UUID, TERM_PROGRAM="iTerm.app")
@@ -107,7 +108,7 @@ class Process(unittest.TestCase):
         self.tmp.cleanup()
 
     def run_hook(self, payload, env=None):
-        result = subprocess.run(["/usr/bin/python3", str(SCRIPT)], input=payload,
+        result = subprocess.run([sys.executable, str(SCRIPT)], input=payload,
                                 text=True, capture_output=True, env=env or self.env, timeout=4)
         self.assertEqual(result.returncode, 0)
         self.assertEqual(result.stdout, "{}\n")
@@ -137,7 +138,7 @@ class Process(unittest.TestCase):
         self.assertFalse(json.loads((self.data / f"{UUID}.json").read_text())["reported"])
 
     def test_iterm_timeout_never_blocks(self):
-        self.fake.write_text("#!/usr/bin/python3\nimport time\ntime.sleep(8)\n")
+        self.fake.write_text("#!" + sys.executable + "\nimport time\ntime.sleep(8)\n")
         self.run_hook(json.dumps(event("Stop")))
         self.assertFalse(json.loads((self.data / f"{UUID}.json").read_text())["reported"])
 

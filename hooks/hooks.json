@@ -6,7 +6,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "/usr/bin/python3 \"${PLUGIN_ROOT}/scripts/status.py\"",
+            "command": "/bin/sh \"${PLUGIN_ROOT}/scripts/hook.sh\"",
             "timeout": 3
           }
         ]
@@ -17,7 +17,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "/usr/bin/python3 \"${PLUGIN_ROOT}/scripts/status.py\"",
+            "command": "/bin/sh \"${PLUGIN_ROOT}/scripts/hook.sh\"",
             "timeout": 3
           }
         ]
@@ -28,7 +28,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "/usr/bin/python3 \"${PLUGIN_ROOT}/scripts/status.py\"",
+            "command": "/bin/sh \"${PLUGIN_ROOT}/scripts/hook.sh\"",
             "timeout": 3
           }
         ]
@@ -39,7 +39,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "/usr/bin/python3 \"${PLUGIN_ROOT}/scripts/status.py\"",
+            "command": "/bin/sh \"${PLUGIN_ROOT}/scripts/hook.sh\"",
             "timeout": 3
           }
         ]
@@ -50,7 +50,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "/usr/bin/python3 \"${PLUGIN_ROOT}/scripts/status.py\"",
+            "command": "/bin/sh \"${PLUGIN_ROOT}/scripts/hook.sh\"",
             "timeout": 3
           }
         ]
@@ -61,7 +61,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "/usr/bin/python3 \"${PLUGIN_ROOT}/scripts/status.py\"",
+            "command": "/bin/sh \"${PLUGIN_ROOT}/scripts/hook.sh\"",
             "timeout": 3
           }
         ]
@@ -72,7 +72,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "/usr/bin/python3 \"${PLUGIN_ROOT}/scripts/status.py\"",
+            "command": "/bin/sh \"${PLUGIN_ROOT}/scripts/hook.sh\"",
             "timeout": 3
           }
         ]
@@ -83,7 +83,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "/usr/bin/python3 \"${PLUGIN_ROOT}/scripts/status.py\"",
+            "command": "/bin/sh \"${PLUGIN_ROOT}/scripts/hook.sh\"",
             "timeout": 3
           }
         ]
@@ -94,7 +94,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "/usr/bin/python3 \"${PLUGIN_ROOT}/scripts/status.py\"",
+            "command": "/bin/sh \"${PLUGIN_ROOT}/scripts/hook.sh\"",
             "timeout": 3
           }
         ]
@@ -105,7 +105,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "/usr/bin/python3 \"${PLUGIN_ROOT}/scripts/status.py\"",
+            "command": "/bin/sh \"${PLUGIN_ROOT}/scripts/hook.sh\"",
             "timeout": 3
           }
         ]
@@ -116,7 +116,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "/usr/bin/python3 \"${PLUGIN_ROOT}/scripts/status.py\"",
+            "command": "/bin/sh \"${PLUGIN_ROOT}/scripts/hook.sh\"",
             "timeout": 3
           }
         ]
@@ -127,7 +127,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "/usr/bin/python3 \"${PLUGIN_ROOT}/scripts/status.py\"",
+            "command": "/bin/sh \"${PLUGIN_ROOT}/scripts/hook.sh\"",
             "timeout": 3
           }
         ]

@@ -4,6 +4,7 @@ import json
 from pathlib import Path
 import shlex
 import tempfile
+import subprocess
 import unittest
 from unittest.mock import patch
 
@@ -69,7 +70,7 @@ class Installer(unittest.TestCase):
             paths = installer.locations(home, ROOT)
             args = argparse.Namespace(workspace=str(home), workspace_name="Work", parent_profile="AI Chat",
                                       no_workspace=False, dry_run=False)
-            with patch.object(installer.shutil, "which", return_value="/fake/codex"), patch.object(installer, "run") as run:
+            with patch.object(installer.shutil, "which", return_value="/fake/codex"), patch.object(installer, "prerequisites", return_value=([], {}, "/fake/codex", "/fake/it2")), patch.object(installer, "run") as run:
                 installer.install(paths, args)
                 first_marketplace = paths["marketplace"].read_bytes()
                 first_profiles = paths["profiles"].read_bytes()
@@ -86,7 +87,7 @@ class Installer(unittest.TestCase):
             home = Path(temp)
             args = argparse.Namespace(workspace=None, workspace_name=None, parent_profile=None,
                                       no_workspace=False, dry_run=True)
-            with patch.object(installer.shutil, "which", return_value="/fake/codex"), patch.object(installer, "run") as run:
+            with patch.object(installer.shutil, "which", return_value="/fake/codex"), patch.object(installer, "prerequisites", return_value=([], {}, "/fake/codex", "/fake/it2")), patch.object(installer, "run") as run:
                 installer.install(installer.locations(home, ROOT), args)
                 self.assertEqual(list(home.iterdir()), [])
                 run.assert_not_called()
@@ -97,7 +98,7 @@ class Installer(unittest.TestCase):
             paths = installer.locations(home, ROOT)
             paths["profiles"].parent.mkdir(parents=True)
             paths["profiles"].write_text(json.dumps({"Profiles": [{"Guid": installer.DEFAULT_GUID, "Name": "Codex"}]}))
-            with patch.object(installer, "run"):
+            with patch.object(installer, "run", return_value=subprocess.CompletedProcess([], 0, stdout='{"installed":[]}')), patch("iterm_support.executable", return_value="/fake/codex"):
                 installer.uninstall(paths, False)
             self.assertFalse(paths["profiles"].exists())
             self.assertEqual(len(list((paths["settings"].parent / "backups").glob("*/codex-profiles.json"))), 1)

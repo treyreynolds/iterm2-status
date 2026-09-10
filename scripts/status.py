@@ -7,11 +7,14 @@ import json
 import os
 from pathlib import Path
 import re
-import shutil
 import subprocess
 import sys
 import tempfile
 import time
+
+# Also support importlib-based embedding by the installer and test tools.
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from iterm_support import find_it2
 
 EVENTS = (
     "SessionStart", "UserPromptSubmit", "PreToolUse", "PermissionRequest",
@@ -102,19 +105,6 @@ def transition(previous, event):
         status, detail = "idle", "Codex · " + state["project"]
     state.update(status=status, detail=detail)
     return state
-
-
-def find_it2():
-    override = os.environ.get("CODEX_ITERM2_IT2")
-    if override:
-        return override
-    # Follow the stable link installed by iTerm's Claude integration after app moves.
-    cc = Path.home() / ".config/iterm2/cc-status"
-    candidates = [cc.resolve().parent / "it2", Path("/Applications/iTerm.app/Contents/Resources/utilities/it2")]
-    for candidate in candidates:
-        if candidate.is_file() and os.access(candidate, os.X_OK):
-            return str(candidate)
-    return shutil.which("it2")
 
 
 def report(event):

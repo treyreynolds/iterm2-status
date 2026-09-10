@@ -1,0 +1,33 @@
+name: Compatibility
+on:
+  push:
+    branches: [main, 'beta/**']
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: compatibility-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  tests:
+    name: ${{ matrix.os }} / Python ${{ matrix.python }}
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - {os: macos-15-intel, python: '3.9'}
+          - {os: macos-15-intel, python: '3.14'}
+          - {os: macos-14, python: '3.9'}
+          - {os: macos-15, python: '3.11'}
+          - {os: macos-26, python: '3.14'}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+        with:
+          python-version: ${{ matrix.python }}
+      - run: make test
