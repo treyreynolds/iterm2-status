@@ -11,7 +11,7 @@ iTerm2 supplies the sidebar; this plugin supplies observational lifecycle hooks
 and a launcher installer. Claude Code is optional. No daemon, API key, pip package,
 or MCP server is needed by this plugin.
 
-**Public beta in preparation: `v0.2.0-beta.1`.** See the
+**Public beta: [v0.2.0-beta.1](https://github.com/treyreynolds/iterm2-status/releases/tag/v0.2.0-beta.1).** See the
 [compatibility matrix](docs/compatibility.md) for verified setups and current limits.
 
 ## Requirements
@@ -28,7 +28,7 @@ under Codex's normal controls.
 
 ## Install
 
-Clone the repository (while it is private, authenticate Git with your GitHub account):
+Clone the repository:
 
 ```sh
 mkdir -p ~/plugins

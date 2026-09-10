@@ -16,6 +16,6 @@ paths, terminal/project identities, hook payloads, and child-process output. Ful
 configuration files and backups may contain sensitive settings; never post them.
 
 Only the latest beta is maintained during the beta period. Security reports should
-use GitHub's private vulnerability reporting on this repository once enabled.
+use [GitHub's private vulnerability reporting](https://github.com/treyreynolds/iterm2-status/security/advisories/new).
 Do not disclose credentials or an exploitable vulnerability in a public issue.
 This is a community project with no guaranteed response-time service agreement.

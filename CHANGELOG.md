@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.2.0-beta.1 — 2026-09-10 (in preparation)
+## 0.2.0-beta.1 — 2026-09-10
 
 - Discover standard, per-user, and custom iTerm installations without requiring Claude.
 - Remember Python, Codex, and shell paths; support bash/zsh/fish launcher choices,
