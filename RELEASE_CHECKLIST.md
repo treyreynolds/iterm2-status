@@ -1,6 +1,6 @@
 # Public beta work record
 
-State checked 2026-09-10. Target: v0.2.0-beta.1. Source branch: beta/0.2.0.
+Completed 2026-09-10. Release: v0.2.0-beta.1, source commit 0ee17ade47a58698ec6832a53044190cfd8ff94c.
 The objective is a public beta with useful support across common macOS setups.
 
 - [x] Portable Python and iTerm discovery; explicit prerequisite checks.
@@ -13,8 +13,8 @@ The objective is a public beta with useful support across common macOS setups.
 - [x] Setup, troubleshooting, compatibility, privacy, contribution, and security docs.
 - [x] MIT license using the stated default from the optional owner preference question.
 - [x] Local live status, launcher, approval, completion, interruption, exit, and resume verification.
-- [ ] Release with checksummed download.
-- [ ] Publish beta and verify anonymous access to code and release assets.
+- [x] Release with checksummed download.
+- [x] Publish beta and verify anonymous access to code and release assets.
 
 Evidence and remaining work will be recorded here before release. Unit tests of a
 setup are distinguished from a real macOS/CLI test of that setup. Unsupported
@@ -38,5 +38,16 @@ remote or terminal-multiplexer paths must be explicit, without implying they wor
 - Default and workspace profiles opened native windows with the expected working
   directory. Live doctor passed; hook trust reviewed separately in `/hooks`.
 - MIT is the stated default. Release notes and compatibility evidence are ready.
-- Remaining: final commit CI, package, publish, enable private security reporting,
-  and verify anonymous access and the archive checksum.
+- Final candidate CI 34508248499 and main CI 34509069756 passed all seven jobs
+  on release commit 0ee17ade47a58698ec6832a53044190cfd8ff94c.
+- Published [v0.2.0-beta.1](https://github.com/treyreynolds/iterm2-status/releases/tag/v0.2.0-beta.1)
+  as a prerelease; verified annotated tag target, 49,158-byte ZIP, and checksum.
+  Anonymous downloads matched SHA256
+  `4477f30fd05386468cc231b9c61c55aaec8c08e2e1adf7cb10acc5e804d79b5d`.
+- Anonymous repository API confirmed public visibility and MIT licensing.
+  GitHub private vulnerability reporting is enabled; bug-report form is available.
+- Extracted archive passed source validation. All 59 historical blobs were checked
+  for common credential patterns and personal home paths, with no matches.
+- Disposable test windows and the test-directory trust entry were cleaned up.
+  Existing launcher preferences remain installed. The public beta objective is met;
+  unverified environments are explicitly listed in docs/compatibility.md.
