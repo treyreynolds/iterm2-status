@@ -78,6 +78,35 @@ The installer respects `CODEX_HOME` for Codex configuration backups and
 consistent when installing and launching Codex. Advanced runtime overrides and
 application discovery are documented in [troubleshooting](docs/troubleshooting.md).
 
+## Codex 0.157 and later: --no-daemon
+
+Since Codex 0.157 the TUI is a client of a shared `codex app-server` daemon, and hooks
+run inside that daemon. They see the `ITERM_SESSION_ID` of the tab that started the
+daemon, so status updates go to the wrong tab or nowhere. The **Codex** profile launcher
+now adds `--no-daemon` itself (only when `codex --help` lists it), which keeps hooks in the
+tab's own process. When you start `codex` from an ordinary tab, pass the same flag, for
+example with a zsh function. The `function` keyword keeps it valid even if you also have
+`alias codex=...`; the flag is added only when your Codex knows it and you did not pass it:
+
+```zsh
+function codex {
+  case "${1-}" in
+    agents|remote-control|app-server)
+      command codex "$@" ;;
+    *)
+      if (( ! ${@[(Ie)--no-daemon]} )) \
+         && command codex --help 2>/dev/null | grep -q -- --no-daemon; then
+        command codex --no-daemon "$@"
+      else
+        command codex "$@"
+      fi ;;
+  esac
+}
+```
+
+The cost: a `--no-daemon` session is not listed in `codex agents`, and `remote-control`
+does not work with it.
+
 ## Upgrade and rollback
 
 From a clone on `main`:

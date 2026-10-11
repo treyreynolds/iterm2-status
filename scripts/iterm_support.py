@@ -10,6 +10,7 @@ import shutil
 MIN_CODEX = (0, 153, 4)
 MIN_ITERM = (3, 7, 0)
 MIN_PYTHON = (3, 9)
+APP_DIRECTORIES = [Path("/Applications")]
 
 
 def config_dir(home=None, environ=None):
@@ -48,7 +49,8 @@ def find_it2(home=None, environ=None, settings=None):
     settings = load_settings(home, environ) if settings is None else settings
     if settings.get("iterm_app"):
         return executable(Path(settings["iterm_app"]) / "Contents/Resources/utilities/it2")
-    candidates = [shutil.which("it2"), home / ".iterm2/it2"]
+    # The bundled it2 goes first: PATH may hold an unrelated it2.
+    candidates = []
     # The Claude integration is optional; its link is just another discovery hint.
     cc = home / ".config/iterm2/cc-status"
     try:
@@ -56,9 +58,10 @@ def find_it2(home=None, environ=None, settings=None):
             candidates.append(cc.resolve().parent / "it2")
     except (OSError, RuntimeError):
         pass
-    for directory in [home / "Applications", Path("/Applications")]:
+    for directory in [home / "Applications", *APP_DIRECTORIES]:
         candidates.append(directory / "iTerm.app/Contents/Resources/utilities/it2")
         candidates.extend(p / "Contents/Resources/utilities/it2" for p in sorted(directory.glob("*iTerm*.app")))
+    candidates.extend([shutil.which("it2"), home / ".iterm2/it2"])
     return next((found for value in candidates if (found := executable(value))), None)
 
 

@@ -115,6 +115,30 @@ class Setup(unittest.TestCase):
         with patch.object(support.shutil, 'which', side_effect=lambda p: str(p) if p and Path(p).is_file() and os.access(p, os.X_OK) else None):
             self.assertEqual(support.find_it2(self.home, {}, {}), str(self.it2))
 
+    def fake_path_it2(self):
+        other = self.home / 'bin/it2'
+        other.parent.mkdir(exist_ok=True)
+        other.write_text('#!/bin/sh\necho unrelated-tool\n')
+        other.chmod(0o755)
+        return other
+
+    def which_with(self, other):
+        return lambda p: str(other) if p == 'it2' else (str(p) if p and Path(p).is_file() and os.access(p, os.X_OK) else None)
+
+    def only_home_apps(self):
+        return patch.object(support, 'APP_DIRECTORIES', [])
+
+    def test_bundled_it2_wins_over_unrelated_it2_in_path(self):
+        other = self.fake_path_it2()
+        with self.only_home_apps(), patch.object(support.shutil, 'which', side_effect=self.which_with(other)):
+            self.assertEqual(support.find_it2(self.home, {}, {}), str(self.it2))
+
+    def test_path_it2_used_when_no_bundle_found(self):
+        other = self.fake_path_it2()
+        self.it2.unlink()
+        with self.only_home_apps(), patch.object(support.shutil, 'which', side_effect=self.which_with(other)):
+            self.assertEqual(support.find_it2(self.home, {}, {}), str(other))
+
     def test_invalid_explicit_override_does_not_silently_select_other_app(self):
         self.assertIsNone(support.find_it2(self.home, {'CODEX_ITERM2_IT2': '/not/an/it2'}, {}))
         self.assertIsNone(support.find_it2(self.home, {}, {'iterm_app': '/not/an/app'}))

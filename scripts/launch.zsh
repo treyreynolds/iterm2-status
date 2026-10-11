@@ -34,7 +34,16 @@ fi
 if [[ "$TERM_PROGRAM" == "iTerm.app" && -n "$ITERM_SESSION_ID" ]]; then
   printf '\e]21337;status=idle;indicator=#98c379;status-color=#98c379;detail=Codex\a'
 fi
-"$codex_path" "$@"
+# Since Codex 0.157 hooks run in a shared app-server that carries the environment
+# (including ITERM_SESSION_ID) of whichever tab started it. --no-daemon keeps them
+# in this tab's own process. Older Codex does not know the flag, so check first.
+# Codex rejects the flag twice, so skip it when the arguments already carry it.
+codex_args=("$@")
+if (( ! ${codex_args[(Ie)--no-daemon]} )) \
+   && "$codex_path" --help 2>/dev/null | grep -q -- --no-daemon; then
+  codex_args=(--no-daemon "$@")
+fi
+"$codex_path" "${codex_args[@]}"
 codex_exit_status=$?
 # A normal session end is handled by the hook. This also clears after Ctrl-C or
 # a CLI crash when the process exits but the terminal stays open.

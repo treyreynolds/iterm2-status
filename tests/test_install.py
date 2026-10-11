@@ -152,5 +152,49 @@ def read_settings(paths):
     return json.loads(paths["settings"].read_text())
 
 
+class Launcher(unittest.TestCase):
+    def run_launcher(self, help_text, *args):
+        with tempfile.TemporaryDirectory() as raw:
+            tmp = Path(raw)
+            fake = tmp / "codex"
+            fake.write_text(
+                "#!/usr/bin/env python3\n"
+                "import json, sys\n"
+                "if '--help' in sys.argv[1:]:\n"
+                f"    print({help_text!r})\n"
+                "    sys.exit(0)\n"
+                f"open({str(tmp / 'args.json')!r}, 'w').write(json.dumps(sys.argv[1:]))\n"
+            )
+            fake.chmod(0o755)
+            runtime = tmp / "config" / "codex-iterm2-status"
+            runtime.mkdir(parents=True)
+            (runtime / "codex-path").write_text(f"{fake}\n")
+            (runtime / "shell-path").write_text("/usr/bin/true\n")
+            subprocess.run(
+                ["/bin/zsh", str(ROOT / "scripts/launch.zsh"), *args],
+                env={"HOME": str(tmp), "XDG_CONFIG_HOME": str(tmp / "config"),
+                     "PATH": "/usr/bin:/bin"},
+                check=True, stdout=subprocess.DEVNULL,
+            )
+            return json.loads((tmp / "args.json").read_text())
+
+    def test_adds_no_daemon_when_supported(self):
+        self.assertEqual(self.run_launcher("  --no-daemon  Run without daemon", "resume", "--last"),
+                         ["--no-daemon", "resume", "--last"])
+
+    def test_keeps_arguments_when_flag_unknown(self):
+        self.assertEqual(self.run_launcher("Usage: codex [OPTIONS]", "resume", "--last"),
+                         ["resume", "--last"])
+
+    def test_arguments_with_spaces_pass_through(self):
+        self.assertEqual(self.run_launcher("--no-daemon", "it's a prompt"),
+                         ["--no-daemon", "it's a prompt"])
+
+    def test_does_not_double_no_daemon(self):
+        # Codex rejects a repeated --no-daemon ("cannot be used multiple times").
+        self.assertEqual(self.run_launcher("--no-daemon", "--no-daemon", "resume"),
+                         ["--no-daemon", "resume"])
+
+
 if __name__ == "__main__":
     unittest.main()
